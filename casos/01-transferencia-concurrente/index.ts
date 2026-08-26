@@ -8,26 +8,27 @@ const config = {
     host: "localhost",
     port: 5432,
     database: "backend_lab",
-    query_timeout: 1000,
     connectionTimeoutMillis: 80000
 }
 
 export const client = new Client(config)
 
+const query = `CREATE TABLE account (
+    id SERIAL PRIMARY KEY,
+    balance INT,
+    version VARCHAR(10)
+)
+`
 await client.connect()
+const response = await client.query('SELECT NOW()')
     .then(() => {
-        console.log("Connection correctly");
-    })
-    .catch((reason) => {
-        console.log(reason);
-        
-    })
+    console.log('TODO CORRECTO');
+    
+    
+})
+
+
+console.log(response);
 
 await client.end()
-    .then(() => {
-        console.log("bay bay database closed");
 
-    }).catch(() => {
-        console.log("Hubo un error al cerra la conexion");
-        
-    })
