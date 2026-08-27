@@ -13,22 +13,32 @@ const config = {
 
 export const client = new Client(config)
 
-const query = `CREATE TABLE account (
+const createTableQuery = `CREATE TABLE account (
     id SERIAL PRIMARY KEY,
     balance INT,
     version VARCHAR(10)
 )
 `
+
+const createStockQuery = `
+    INSERT INTO account (balance, version)
+    VALUES
+        (1000, 'v1'),
+        (2500, 'v1'),
+        (500, 'v2'),
+        (7500, 'v1')
+`
 await client.connect()
-const response = await client.query('SELECT NOW()')
-    .then(() => {
-    console.log('TODO CORRECTO');
+// const response = await client.query(createStockQuery)
+//     .then(() => {
+//     console.log('TODO CORRECTO');  
+//     }).catch((reason) => {
+//     console.log('salio algo raro ' + reason);
     
-    
-})
+// })
 
-
-console.log(response);
-
+const result = await client.query(`SELECT * FROM account`)
+ console.log(result.rows);
 await client.end()
+
 
