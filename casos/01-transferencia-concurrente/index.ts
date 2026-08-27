@@ -11,9 +11,11 @@ const config = {
     connectionTimeoutMillis: 80000
 }
 
-export const client = new Client(config)
+const clientA = new Client(config)
+const clientB = new Client(config)
 
-const createTableQuery = `CREATE TABLE account (
+const createTableQuery = `
+CREATE TABLE account (
     id SERIAL PRIMARY KEY,
     balance INT,
     version VARCHAR(10)
@@ -28,7 +30,7 @@ const createStockQuery = `
         (500, 'v2'),
         (7500, 'v1')
 `
-await client.connect()
+await clientA.connect()
 // const response = await client.query(createStockQuery)
 //     .then(() => {
 //     console.log('TODO CORRECTO');  
@@ -37,8 +39,14 @@ await client.connect()
     
 // })
 
-const result = await client.query(`SELECT * FROM account`)
+const result = await clientA.query(`SELECT * FROM account`)
  console.log(result.rows);
-await client.end()
+await clientA.end()
 
+async function paralelTransaction(query:string) {
+    await Promise.all([
+        clientA.query(query),
+        clientB.query(query)
+  ])  
+}
 
