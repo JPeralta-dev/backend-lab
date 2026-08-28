@@ -10,3 +10,24 @@ Luego de una investigacion realizada lo que conclui es que necesitamos la serial
 **¿row lock o table lock?**
 
 Row lockk, porque nos ayuda con la corrurencia en un flujo masivo, aunque luego de que sea en grandes cantidades de peticiones de debe revisar si pasarse a table lock normalmente se utiliza este a pesar de la cantidde de recursos que consume.
+
+**¿Porque es insegura las dos primeras?**
+La primera que se escribe de esta manera
+
+```SQL
+UPDATE account
+SET balance = balance - 1
+WHERE id = 1
+```
+
+A primera vista todo correcto, el usuario actualiza el recusro y todo perfecto, pero y si dos de manera simultanea viene a cambiar el recurso? entonces tenemos un problema porque cuando pase eso lo mas seguro es que si tenemos el ultimo stock de un producto a uno de los usuarios vamos a venderle algo que no tenemos.
+
+Ahora por otra parte tenemos la seguna manera y es de esta manera.
+
+```SQL
+BEGIN;
+SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
+UPDATE usuario SET balance = balance - 1 WHERE id = 1;
+COMMIT;
+```
+

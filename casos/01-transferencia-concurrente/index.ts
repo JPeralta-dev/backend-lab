@@ -43,6 +43,10 @@ const result = await clientA.query(`SELECT * FROM account`)
  console.log(result.rows);
 await clientA.end()
 
+const queryWithoutSecurityA = ``
+const queryWithoutSecurityB = ``
+
+
 async function paralelTransaction(query:string) {
     await Promise.all([
         clientA.query(query),

@@ -4,3 +4,13 @@ CREATE TABLE account (
     balance INT,
     version VARCHAR(10)
 )
+
+UPDATE account
+SET balance = balance - 1
+WHERE id = 1
+
+BEGIN;
+SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
+UPDATE usuario SET balance = balance - 1 WHERE id = 1;
+COMMIT;
+
