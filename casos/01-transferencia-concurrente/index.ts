@@ -57,7 +57,12 @@ SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
 UPDATE account SET balance = balance - 7500 WHERE id = 4;
 COMMIT;
 `
-
+const queryOptimitcLoking = `
+UPDATE account
+SET balance =  balance - 500, version = v2
+WHERE id = 5
+AND version v1
+`
 
 async function paralelTransaction(query: string) {
     console.log('Entre en la funcion vamos a empezar ');
