@@ -43,8 +43,17 @@ const result = await clientA.query(`SELECT * FROM account`)
  console.log(result.rows);
 await clientA.end()
 
-const queryWithoutSecurityA = ``
-const queryWithoutSecurityB = ``
+// Comportamiento sin seguridad
+const queryWithoutSecurityA = `UPDATE account
+SET balance = balance - 1
+WHERE id = 1`
+
+// Comportamiento con FOR UPDATE 
+const queryWithLockRowA = `BEGIN;
+SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
+UPDATE usuario SET balance = balance - 1 WHERE id = 1;
+COMMIT;
+`
 
 
 async function paralelTransaction(query:string) {
@@ -53,4 +62,6 @@ async function paralelTransaction(query:string) {
         clientB.query(query)
   ])  
 }
+
+await paralelTransaction(queryWithoutSecurityA)
 
