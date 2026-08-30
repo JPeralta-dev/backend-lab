@@ -62,3 +62,44 @@ COMMIT;
 
 Esto aunque asegura que no vendmos nada sigue siendo malo para concurrencia. Incluso si bloqueamos la fila.
 
+**¿Porque estas dos si son excelentes?**
+
+```JSON
+[
+  { id: 2, balance: 2500, version: 'v1' },
+  { id: 3, balance: 500, version: 'v2' },
+  { id: 5, balance: 1000, version: 'v1' },
+  { id: 6, balance: 2500, version: 'v1' },
+  { id: 7, balance: 500, version: 'v2' },
+  { id: 8, balance: 7500, version: 'v1' },
+  { id: 1, balance: -3000, version: 'v1' },
+  { id: 4, balance: 4000, version: 'v1' }
+]
+```
+
+Como podemos observar algo interesante, como vemos en el anterior log el producto 5 tiene un 1000, entonces como implementamos optimistc loking vemos una reaccion impresionante, cuanso ejectamos esta query de manera simultanea.
+
+```SQL
+UPDATE account
+SET balance = balance - 500, version = 'v2'
+WHERE id = 5
+AND version = 'v1'
+```
+
+Imprimos lo que ocurrio y nos impresiona con los siguiente.
+
+```json
+[
+  { id: 2, balance: 2500, version: 'v1' },
+  { id: 3, balance: 500, version: 'v2' },
+  { id: 6, balance: 2500, version: 'v1' },
+  { id: 7, balance: 500, version: 'v2' },
+  { id: 8, balance: 7500, version: 'v1' },
+  { id: 1, balance: -3000, version: 'v1' },
+  { id: 4, balance: 4000, version: 'v1' },
+  { id: 5, balance: 500, version: 'v2' }
+]
+```
+
+Si nos damos cuenta tenemos que el producto con id 5 solo pudo hacer una compra, porque si recondamos es que todos hicieron la transaccion pero dos de estos bloquearon su transaccion porque llamaban a una version del registro que ya no existe.
+

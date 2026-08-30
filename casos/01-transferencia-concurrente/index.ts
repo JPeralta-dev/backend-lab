@@ -54,14 +54,14 @@ WHERE id = 1`
 // Comportamiento con FOR UPDATE 
 const queryWithLockRowA = `BEGIN;
 SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
-UPDATE account SET balance = balance - 7500 WHERE id = 4;
+UPDATE account SET balance = 2000 WHERE id = 4;
 COMMIT;
 `
-const queryOptimitcLoking = `
+const queryOptimisticLoking = `
 UPDATE account
-SET balance =  balance - 500, version = v2
+SET balance = balance - 500, version = 'v2'
 WHERE id = 5
-AND version v1
+AND version = 'v1'
 `
 
 async function paralelTransaction(query: string) {
@@ -89,7 +89,7 @@ async function paralelTransaction(query: string) {
 
 }
 
-await paralelTransaction(queryWithLockRowA)
+//await paralelTransaction(queryOptimisticLoking)
 
 await clientA.query('SELECT * FROM account')
 
