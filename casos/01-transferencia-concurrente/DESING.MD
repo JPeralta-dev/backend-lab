@@ -61,3 +61,4 @@ COMMIT;
 ```
 
 Esto aunque asegura que no vendmos nada sigue siendo malo para concurrencia. Incluso si bloqueamos la fila.
+
