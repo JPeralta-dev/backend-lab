@@ -54,7 +54,7 @@ WHERE id = 1`
 // Comportamiento con FOR UPDATE 
 const queryWithLockRowA = `BEGIN;
 SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
-UPDATE usuario SET balance = balance - 7500 WHERE id = 4;
+UPDATE account SET balance = balance - 7500 WHERE id = 4;
 COMMIT;
 `
 
@@ -77,7 +77,7 @@ async function paralelTransaction(query: string) {
             
         })
     } catch (error) {
-
+        console.log(`Hubo un error y es este: \ ${error}`)
     }
 
     console.timeEnd('bunch-of-stuff')
@@ -86,7 +86,7 @@ async function paralelTransaction(query: string) {
 
 await paralelTransaction(queryWithLockRowA)
 
-clientA.query('SELECT * FROM account')
+await clientA.query('SELECT * FROM account')
 
 await clientA.end()
 await clientB.end()
