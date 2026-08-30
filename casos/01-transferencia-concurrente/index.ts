@@ -13,6 +13,7 @@ const config = {
 
 const clientA = new Client(config)
 const clientB = new Client(config)
+const clientC = new Client(config)
 
 const createTableQuery = `
 CREATE TABLE account (
@@ -41,27 +42,47 @@ await clientA.connect()
 
 const result = await clientA.query(`SELECT * FROM account`)
  console.log(result.rows);
-await clientA.end()
+
 
 // Comportamiento sin seguridad
 const queryWithoutSecurityA = `UPDATE account
-SET balance = balance - 1
+SET balance = balance - 1000
 WHERE id = 1`
 
 // Comportamiento con FOR UPDATE 
 const queryWithLockRowA = `BEGIN;
 SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
-UPDATE usuario SET balance = balance - 1 WHERE id = 1;
+UPDATE usuario SET balance = balance - 1000 WHERE id = 1;
 COMMIT;
 `
 
 
-async function paralelTransaction(query:string) {
-    await Promise.all([
+async function paralelTransaction(query: string) {
+    console.log('Entre en la funcion vamos a empezar ');
+    
+    console.time('bunch-of-stuff')
+    Promise.all([
         clientA.query(query),
-        clientB.query(query)
-  ])  
+        clientB.query(query),
+        clientC.query(query)
+    ])
+    
+        .then((values) => {
+        console.log("Se realizaron las dos trasacciones");
+        console.log(values);
+        
+        })
+        .catch((err) => {
+        console.error(err)
+        
+        })
+    
+    console.timeEnd('bunch-of-stuff')
+    
 }
 
-await paralelTransaction(queryWithoutSecurityA)
+//await paralelTransaction(queryWithLockRowA)
 
+//clientA.query('SELECT * FROM account')
+
+await clientA.end()
