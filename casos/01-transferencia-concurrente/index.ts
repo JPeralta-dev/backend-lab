@@ -32,16 +32,18 @@ const createStockQuery = `
         (7500, 'v1')
 `
 await clientA.connect()
+await clientB.connect()
+await clientC.connect()
 // const response = await client.query(createStockQuery)
 //     .then(() => {
 //     console.log('TODO CORRECTO');  
 //     }).catch((reason) => {
 //     console.log('salio algo raro ' + reason);
-    
+
 // })
 
 const result = await clientA.query(`SELECT * FROM account`)
- console.log(result.rows);
+console.log(result.rows);
 
 
 // Comportamiento sin seguridad
@@ -52,37 +54,40 @@ WHERE id = 1`
 // Comportamiento con FOR UPDATE 
 const queryWithLockRowA = `BEGIN;
 SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
-UPDATE usuario SET balance = balance - 1000 WHERE id = 1;
+UPDATE usuario SET balance = balance - 7500 WHERE id = 4;
 COMMIT;
 `
 
 
 async function paralelTransaction(query: string) {
     console.log('Entre en la funcion vamos a empezar ');
-    
+
     console.time('bunch-of-stuff')
-    Promise.all([
-        clientA.query(query),
-        clientB.query(query),
-        clientC.query(query)
-    ])
-    
-        .then((values) => {
-        console.log("Se realizaron las dos trasacciones");
-        console.log(values);
+    try {
+        const value = await Promise.all([
+            clientA.query(query),
+            clientB.query(query),
+            clientC.query(query)
+        ])
+
+        console.log("Se lograron hacer todas las transacciones");
         
+        value.forEach((v, index) => {
+            console.log(`El cliente ${index} completo su transaccion`);
+            
         })
-        .catch((err) => {
-        console.error(err)
-        
-        })
-    
+    } catch (error) {
+
+    }
+
     console.timeEnd('bunch-of-stuff')
-    
+
 }
 
-//await paralelTransaction(queryWithLockRowA)
+await paralelTransaction(queryWithLockRowA)
 
-//clientA.query('SELECT * FROM account')
+clientA.query('SELECT * FROM account')
 
 await clientA.end()
+await clientB.end()
+await clientC.end()
