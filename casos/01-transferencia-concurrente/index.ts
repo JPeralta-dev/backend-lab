@@ -64,6 +64,12 @@ WHERE id = 5
 AND version = 'v1'
 `
 
+const queryOptimized = `
+UPDATE account
+SET balance = balance - 2500
+WHERE id = 6
+AND balance >= 1
+`
 async function paralelTransaction(query: string) {
     console.log('Entre en la funcion vamos a empezar ');
 
