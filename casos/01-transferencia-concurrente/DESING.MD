@@ -30,3 +30,34 @@ SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
 UPDATE usuario SET balance = balance - 1 WHERE id = 1;
 COMMIT;
 ```
+
+```JavaScript
+[
+  { id: 2, balance: 2500, version: 'v1' },
+  { id: 3, balance: 500, version: 'v2' },
+  { id: 5, balance: 1000, version: 'v1' },
+  { id: 6, balance: 2500, version: 'v1' },
+  { id: 7, balance: 500, version: 'v2' },
+  { id: 8, balance: 7500, version: 'v1' },
+  { id: 1, balance: -3000, version: 'v1' },
+  { id: 4, balance: -15000, version: 'v1' }
+]
+Entre en la funcion vamos a empezar 
+Se lograron hacer todas las transacciones
+El cliente 0 completo su transaccion
+El cliente 1 completo su transaccion
+El cliente 2 completo su transaccion
+bunch-of-stuff: 3.811ms
+```
+
+Como puedes ver aunque se blooque con el FOR UPDATE incluso si en la sql y cambiiamos 
+
+```SQL
+BEGIN;
+SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
+UPDATE usuario SET balance = balance - 1 WHERE id = 1
+AND balance > 1;
+COMMIT;
+```
+
+Esto aunque asegura que no vendmos nada sigue siendo malo para concurrencia. Incluso si bloqueamos la fila.
