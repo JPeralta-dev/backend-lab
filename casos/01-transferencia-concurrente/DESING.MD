@@ -9,7 +9,7 @@ Luego de una investigacion realizada lo que conclui es que necesitamos la serial
 
 **¿row lock o table lock?**
 
-Row lockk, porque nos ayuda con la corrurencia en un flujo masivo, aunque luego de que sea en grandes cantidades de peticiones de debe revisar si pasarse a table lock normalmente se utiliza este a pesar de la cantidde de recursos que consume.
+Row lockk, porque nos ayuda con la corrurencia en un flujo masivo, aunque luego de que sea en grandes cantidades de peticiones de debe revisar si pasarse a table lock normalmente se utiliza este a pesar de la cantidde de recursos que consume (**Correcion:** Por nada del mundo en una de estas tablas que las cuales estamos utilizando para hacer tantas transacciones escalemos a eso porque bloqueriamos a todos los usuarios que intenten esto.).
 
 **¿Porque es insegura las dos primeras?**
 La primera que se escribe de esta manera
@@ -60,7 +60,7 @@ AND balance > 1;
 COMMIT;
 ```
 
-Esto aunque asegura que no vendmos nada sigue siendo malo para concurrencia. Incluso si bloqueamos la fila.
+Esto aunque asegura que no vendmos nada sigue siendo malo para concurrencia (correcion de lo anterior, no es que sea malo, pero para concurrenia el optimits lock es pesimo, lo que ocurre es que las peticiones entran en una fila mientras una se este ejecutando la otra no puede modificar esa fila al mismo tiempo, esto no garantiza la validacion que dije, me resto es porque no lo hice yo pero verdaderamente no funciona es por lo anterior.). Incluso si bloqueamos la fila.
 
 **¿Porque estas dos si son excelentes?**
 
@@ -102,4 +102,3 @@ Imprimos lo que ocurrio y nos impresiona con los siguiente.
 ```
 
 Si nos damos cuenta tenemos que el producto con id 5 solo pudo hacer una compra, porque si recondamos es que todos hicieron la transaccion pero dos de estos bloquearon su transaccion porque llamaban a una version del registro que ya no existe.
-

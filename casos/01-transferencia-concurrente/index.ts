@@ -36,7 +36,7 @@ await clientB.connect()
 await clientC.connect()
 // const response = await client.query(createStockQuery)
 //     .then(() => {
-//     console.log('TODO CORRECTO');  
+//     console.log('TODO CORRECTO');
 //     }).catch((reason) => {
 //     console.log('salio algo raro ' + reason);
 
@@ -51,7 +51,7 @@ const queryWithoutSecurityA = `UPDATE account
 SET balance = balance - 1000
 WHERE id = 1`
 
-// Comportamiento con FOR UPDATE 
+// Comportamiento con FOR UPDATE
 const queryWithLockRowA = `BEGIN;
 SELECT id, balance FROM account WHERE id = 1 FOR UPDATE;
 UPDATE account SET balance = 2000 WHERE id = 4;
@@ -68,7 +68,7 @@ const queryOptimized = `
 UPDATE account
 SET balance = balance - 2500
 WHERE id = 6
-AND balance >= 1
+AND balance >= 1000
 `
 async function paralelTransaction(query: string) {
     console.log('Entre en la funcion vamos a empezar ');
@@ -82,10 +82,10 @@ async function paralelTransaction(query: string) {
         ])
 
         console.log("Se lograron hacer todas las transacciones");
-        
+
         value.forEach((v, index) => {
             console.log(`El cliente ${index} completo su transaccion`);
-            
+
         })
     } catch (error) {
         console.log(`Hubo un error y es este: \ ${error}`)
