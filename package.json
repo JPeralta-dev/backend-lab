@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "db:up": "docker-compose up -d",
-    "case:01": "tsx casos/01-transferencia-concurrente/index.ts"
+    "case:01": "tsx casos/01-transferencia-concurrente/index.ts",
+    "case:01:test": "tsx casos/01-transferencia-concurrente/test-concurrencia.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
