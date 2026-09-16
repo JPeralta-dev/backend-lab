@@ -1,4 +1,4 @@
--- TODO: lo escribo yo
+
 CREATE TABLE account (
     id SERIAL PRIMARY KEY,
     balance INT,

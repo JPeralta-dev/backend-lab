@@ -10,6 +10,11 @@ const config = {
   connectionTimeoutMillis: 10000,
 };
 
+interface stock {
+  id: number
+  balance: number
+  version: number
+}
 // Dos clientes con conexiones independientes para simular concurrencia real
 const clientA = new Client(config);
 const clientB = new Client(config);
@@ -26,7 +31,7 @@ async function resetAccount(client: Client) {
   await client.query(`INSERT INTO account (id, balance, version) VALUES (1, 100, 1);`);
 }
 
-async function getBalance(client: Client): Promise<{ id: number; balance: number; version: number }> {
+async function getBalance(client: Client): Promise<stock> {
   const res = await client.query(`SELECT id, balance, version FROM account WHERE id = 1;`);
   return res.rows[0];
 }

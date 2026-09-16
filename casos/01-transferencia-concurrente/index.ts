@@ -70,6 +70,20 @@ SET balance = balance - 2500
 WHERE id = 6
 AND balance >= 1000
 `
+
+async function resetAccount(client: Client) {
+  await client.query(`DROP TABLE IF EXISTS account;`);
+  await client.query(`
+    CREATE TABLE account (
+      id INT PRIMARY KEY,
+      balance INT NOT NULL,
+      version INT NOT NULL DEFAULT 1
+    );
+  `);
+  await client.query(`INSERT INTO account (id, balance, version) VALUES (1, 100, 1);`);
+}
+
+
 async function paralelTransaction(query: string) {
     console.log('Entre en la funcion vamos a empezar ');
 
