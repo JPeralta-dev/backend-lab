@@ -6,7 +6,9 @@
   "scripts": {
     "db:up": "docker-compose up -d",
     "case:01": "tsx casos/01-transferencia-concurrente/index.ts",
-    "case:01:test": "tsx casos/01-transferencia-concurrente/test-concurrencia.ts"
+    "case:01:test": "tsx casos/01-transferencia-concurrente/test-concurrencia.ts",
+    "seed:02": "tsx casos/02-indices-explain/seed.ts",
+    "case:02": "tsx casos/02-indices-explain/index.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -14,6 +16,7 @@
     "pg": "^8.13.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
     "@types/node": "^22.7.0",
     "@types/pg": "^8.11.10",
     "tsx": "^4.19.1",
