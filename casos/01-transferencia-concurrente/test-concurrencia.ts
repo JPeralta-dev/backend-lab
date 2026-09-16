@@ -2,11 +2,7 @@ import { Client } from "pg";
 import "dotenv/config";
 
 const config = {
-  user: process.env.DB_USER || "lab",
-  password: process.env.DB_PASSWORD || "lab",
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT) || 5432,
-  database: process.env.DB_NAME || "backend_lab",
+  connectionString: process.env.DATABASE_URL || "postgres://lab:lab@localhost:5432/backend_lab",
   connectionTimeoutMillis: 10000,
 };
 

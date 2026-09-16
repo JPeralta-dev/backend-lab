@@ -1,12 +1,11 @@
 // TODO: lo escribo yo
 import { Client } from "pg";
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const config = {
-    user: "lab",
-    password: "lab",
-    host: "localhost",
-    port: 5432,
-    database: "backend_lab",
+    connectionString: process.env.DATABASE_URL || "postgres://lab:lab@localhost:5432/backend_lab"
 };
 
 const client = new Client(config);
