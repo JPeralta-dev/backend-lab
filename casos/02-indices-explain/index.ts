@@ -6,7 +6,7 @@ dotenv.config()
 
 const config = {
     connectionString: process.env.DATABASE_URL || "postgres://lab:lab@localhost:5432/backend_lab"
-};
+}
 
 const client = new Client(config);
 await client.connect();

@@ -2,11 +2,7 @@ import { Client } from "pg";
 import { faker } from "@faker-js/faker";
 
 const config = {
-    user: "lab",
-    password: "lab",
-    host: "localhost",
-    port: 5432,
-    database: "backend_lab",
+    connectionString: process.env.DATABASE_URL || "postgres://lab:lab@localhost:5432/backend_lab"
 };
 
 const CATEGORIES = [
