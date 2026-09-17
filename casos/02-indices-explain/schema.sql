@@ -10,3 +10,6 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE INDEX index_transactions_user_id
 ON transactions(user_id)
 
+CREATE INDEX index_transactions_user_create_at
+ON transactions(user_id,created_at)
+

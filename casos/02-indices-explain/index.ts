@@ -11,8 +11,16 @@ const config = {
 const client = new Client(config);
 await client.connect();
 
+const indexUserId = `CREATE INDEX index_transactions_user_id
+ON transactions(user_id)
+`
+const createIndexUserIdAndCreateAt = `CREATE INDEX index_transactions_user_create_at
+ON transactions(user_id,created_at)`
+
 // TODO: Escribe aquí tus 3 queries típicas y ejecútalas con EXPLAIN (ANALYZE, BUFFERS)
 // Query 1: Por usuario (ej. userId = X)
+
+client.query(``)
 // Query 2: Por rango de fechas (ej. createdAt BETWEEN Y AND Z)
 // Query 3: Por categoría + usuario (ej. category = C AND userId = X)
 //
