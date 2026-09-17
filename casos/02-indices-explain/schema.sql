@@ -7,3 +7,6 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 -- TODO: Aquí escribirás tus sentencias CREATE INDEX más adelante para comparar antes y después
+CREATE INDEX index_transactions_user_id
+ON transactions(user_id)
+

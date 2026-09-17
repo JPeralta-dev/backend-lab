@@ -10,7 +10,7 @@
 
 *Tu respuesta:*
 
-Dentro de  lo que podemos encontrar en las columnas que mas se frecuencias, es que creo que sinceramente son las de id, categoria, montos y por fechas de creaciones de esas transacciones esas son exactamente las que yo creo que pueden ser las mas frecuentadas. 
+Dentro de  lo que podemos encontrar en las columnas que mas se frecuencias, es que creo que sinceramente son las de id, categoria, montos y por fechas de creaciones de esas transacciones esas son exactamente las que yo creo que pueden ser las mas frecuentadas.
 
 ---
 
@@ -19,7 +19,7 @@ Dentro de  lo que podemos encontrar en las columnas que mas se frecuencias, es q
 * ¿Cuándo conviene usar un índice **simple** (ej. solo `userId`)?: /
 *Respuesta:*claramente es cuando tenemos que hacer busquedas simples es decir si frecuentamos en buscar solo por id, por monto o por alguna columa en especifico, es decir si no tenemos complejidad de mas de una columna en busquedas frecuentes.
 
-* ¿Cuándo conviene usar un índice **compuesto** (ej. `(userId, createdAt)`) y por qué importa el **orden de las columnas** en el índice? 
+* ¿Cuándo conviene usar un índice **compuesto** (ej. `(userId, createdAt)`) y por qué importa el **orden de las columnas** en el índice?
 *Respuesta:* Comviene en precisamente busquedas compuestas, en donde el orden de estas involucran mas de una columna en la consulta frecuente, puede ser por ejemplo como lo que se ponia de UserId y createAt
 
 * ¿En qué escenario tendría sentido usar un índice **parcial** (ej. `WHERE amount > 10000` o `WHERE status = 'FAILED'`)?
