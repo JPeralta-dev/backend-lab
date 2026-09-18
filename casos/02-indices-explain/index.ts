@@ -17,10 +17,12 @@ ON transactions(user_id)
 const createIndexUserIdAndCreateAt = `CREATE INDEX index_transactions_user_create_at
 ON transactions(user_id,created_at)`
 
+
+
 // TODO: Escribe aquí tus 3 queries típicas y ejecútalas con EXPLAIN (ANALYZE, BUFFERS)
 // Query 1: Por usuario (ej. userId = X)
 console.time("queryBeforeIndex1")
-const result1 = await client.query(`EXPLAIN BUFFERS SELECT * FROM transactions 
+const result1 = await client.query(`EXPLAIN ANALYZE SELECT * FROM transactions 
 WHERE id = 10`)
 console.log(result1.rows);
 
