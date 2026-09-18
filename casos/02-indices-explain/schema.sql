@@ -6,11 +6,12 @@ CREATE TABLE IF NOT EXISTS transactions (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- TODO: Aquí escribirás tus sentencias CREATE INDEX más adelante para comparar antes y después
-CREATE INDEX index_transactions_user_id
-ON transactions(user_id)
+-- Índices creados para optimizar las consultas del Caso 02
+CREATE INDEX IF NOT EXISTS index_transactions_user_id
+ON transactions(user_id);
 
-CREATE INDEX index_transactions_user_create_at
-ON transactions(user_id,created_at)
+CREATE INDEX IF NOT EXISTS index_transactions_user_create_at
+ON transactions(user_id, created_at);
 
-CREATE INDEX idx_transactions_created_at ON transactions(created_at);
+CREATE INDEX IF NOT EXISTS idx_transactions_created_at
+ON transactions(created_at);
