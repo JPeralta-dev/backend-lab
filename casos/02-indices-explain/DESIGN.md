@@ -10,7 +10,7 @@
 
 *Tu respuesta:*
 
-Dentro de  lo que podemos encontrar en las columnas que mas se frecuencias, es que creo que sinceramente son las de id, categoria, montos y por fechas de creaciones de esas transacciones esas son exactamente las que yo creo que pueden ser las mas frecuentadas.
+Dentro de  lo que podemos encontrar en las columnas que mas se frecuencias, es que creo que sinceramente son las de id_user, categoria, montos y por fechas de creaciones de esas transacciones esas son exactamente las que yo creo que pueden ser las mas frecuentadas.
 
 ---
 
@@ -20,11 +20,11 @@ Dentro de  lo que podemos encontrar en las columnas que mas se frecuencias, es q
 *Respuesta:*claramente es cuando tenemos que hacer busquedas simples es decir si frecuentamos en buscar solo por id, por monto o por alguna columa en especifico, es decir si no tenemos complejidad de mas de una columna en busquedas frecuentes.
 
 * ¿Cuándo conviene usar un índice **compuesto** (ej. `(userId, createdAt)`) y por qué importa el **orden de las columnas** en el índice?
-*Respuesta:* Comviene en precisamente busquedas compuestas, en donde el orden de estas involucran mas de una columna en la consulta frecuente, puede ser por ejemplo como lo que se ponia de UserId y createAt
+*Respuesta:* Comviene en precisamente busquedas compuestas, en donde el orden de estas involucran mas de una columna en la consulta frecuente, puede ser por ejemplo como lo que se ponia de UserId y createAt. Ademas de que debemos explicar, en los indices compuesto y Parcial debemos tenr en cuenta el orden de este. primero es el indice primario el lado izquierdo y ya los segundarios van a la derecha, seria haci Apellido -> Nombre como un cuaderno telefonico.
 
 * ¿En qué escenario tendría sentido usar un índice **parcial** (ej. `WHERE amount > 10000` o `WHERE status = 'FAILED'`)?
 
-*respuesta:*Cuando ademas de lo anterior o solo por el hecho de que tenemos que hacer una busqueda frecuente excluyendo algunas filas con respecto a alguna condicion que tenga.
+*respuesta:*Cuando ademas de lo anterior o solo por el hecho de que tenemos que hacer una busqueda frecuente excluyendo algunas filas con respecto a alguna condicion que tenga, un índice parcial como WHERE status = 'FAILED' o WHERE amount > 10000 es útil porque el 99% de transacciones son exitosas/normales (no vale la pena indexarlas todas); indexar solo la anomalía genera un índice minúsculo (1 MB vs 100 MB) ultra rápido. 
 
 ---
 
@@ -49,8 +49,14 @@ Tener índices acelera las lecturas (`SELECT`), pero ¿qué impacto negativo tie
 * ¿Qué diferencia hay entre `Seq Scan` (Sequential Scan) e `Index Scan` / `Bitmap Index Scan`?
 * ¿Qué métricas clave debes observar en el resultado de `EXPLAIN ANALYZE` para saber si tu consulta mejoró realmente?
 
-*Tu respuesta:*
+*Tu respuesta:* Seq Scan: Lee toda la tabla secuencialmente bloque por bloque descartando filas con un filtro en memoria.
+Index Scan: Lee el árbol B-Tree del índice y de inmediato hace un salto aleatorio (random I/O) a la tabla por cada fila encontrada. Ideal para 1 o muy pocas filas (ej. id = 10).
+Bitmap Index Scan + Bitmap Heap Scan : Como la consulta devolvía decenas o miles de filas (66 filas o 68,000 filas), el motor primero busca en el índice y genera un mapa de bits en memoria con las páginas físicas que necesita leer, las ordena secuencialmente y luego va a la tabla en bloque (Bitmap Heap Scan). Evita saltos aleatorios desordenados en disco.
 
+Execution Time: El tiempo real de ejecución de la query.
+Rows Removed by Filter: Filas que el motor tuvo que leer y descartar porque no cumplían alguna condición secundaria.
+Buffers: shared hit / read: Páginas de 8KB leídas en memoria RAM (hit) vs leídas desde el disco (read).
+cost=X..Y: Estimación del optimizador (costo de inicio..costo total).
 
 ## 5. Demostracion de diferencias 
 
@@ -164,3 +170,68 @@ queryBeforeIndex2: 129.878ms
 ]
 queryBeforeIndex3: 142.006ms
 ```
+
+
+Indices Correctos 
+
+[
+  {
+    'QUERY PLAN': 'Bitmap Heap Scan on transactions  (cost=4.81..188.52 rows=50 width=31) (actual time=0.019..0.079 rows=66 loops=1)'
+  },
+  { 'QUERY PLAN': '  Recheck Cond: (user_id = 10)' },
+  { 'QUERY PLAN': '  Heap Blocks: exact=64' },
+  { 'QUERY PLAN': '  Buffers: shared hit=67' },
+  {
+    'QUERY PLAN': '  ->  Bitmap Index Scan on index_transactions_user_id  (cost=0.00..4.80 rows=50 width=0) (actual time=0.010..0.010 rows=66 loops=1)'
+  },
+  { 'QUERY PLAN': '        Index Cond: (user_id = 10)' },
+  { 'QUERY PLAN': '        Buffers: shared hit=3' },
+  { 'QUERY PLAN': 'Planning:' },
+  { 'QUERY PLAN': '  Buffers: shared hit=16' },
+  { 'QUERY PLAN': 'Planning Time: 0.119 ms' },
+  { 'QUERY PLAN': 'Execution Time: 0.333 ms' }
+]
+queryBeforeIndex1: 85.526ms
+[
+  {
+    'QUERY PLAN': 'Bitmap Heap Scan on transactions  (cost=1467.64..6434.60 rows=68997 width=31) (actual time=3.486..14.982 rows=68932 loops=1)'
+  },
+  {
+    'QUERY PLAN': "  Recheck Cond: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone))"
+  },
+  { 'QUERY PLAN': '  Heap Blocks: exact=3932' },
+  { 'QUERY PLAN': '  Buffers: shared hit=4124' },
+  {
+    'QUERY PLAN': '  ->  Bitmap Index Scan on idx_transactions_created_at  (cost=0.00..1450.39 rows=68997 width=0) (actual time=3.076..3.077 rows=68932 loops=1)'
+  },
+  {
+    'QUERY PLAN': "        Index Cond: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone))"
+  },
+  { 'QUERY PLAN': '        Buffers: shared hit=192' },
+  { 'QUERY PLAN': 'Planning:' },
+  { 'QUERY PLAN': '  Buffers: shared hit=3' },
+  { 'QUERY PLAN': 'Planning Time: 0.113 ms' },
+  { 'QUERY PLAN': 'Execution Time: 17.960 ms' }
+]
+queryBeforeIndex2: 102.209ms
+[
+  {
+    'QUERY PLAN': 'Bitmap Heap Scan on transactions  (cost=1464.24..6603.69 rows=55395 width=31) (actual time=3.412..17.169 rows=55095 loops=1)'
+  },
+  {
+    'QUERY PLAN': "  Recheck Cond: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone))"
+  },
+  { 'QUERY PLAN': '  Filter: (user_id > 2000)' },
+  { 'QUERY PLAN': '  Rows Removed by Filter: 13837' },
+  { 'QUERY PLAN': '  Heap Blocks: exact=3932' },
+  { 'QUERY PLAN': '  Buffers: shared hit=4124' },
+  {
+    'QUERY PLAN': '  ->  Bitmap Index Scan on idx_transactions_created_at  (cost=0.00..1450.39 rows=68997 width=0) (actual time=2.996..2.996 rows=68932 loops=1)'
+  },
+  {
+    'QUERY PLAN': "        Index Cond: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone))"
+  },
+  { 'QUERY PLAN': '        Buffers: shared hit=192' },
+  { 'QUERY PLAN': 'Planning Time: 0.100 ms' },
+  { 'QUERY PLAN': 'Execution Time: 19.892 ms' }
+]
