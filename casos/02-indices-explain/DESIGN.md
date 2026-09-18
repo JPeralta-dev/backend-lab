@@ -91,4 +91,40 @@ queryBeforeIndex2: 92.102ms
 queryBeforeIndex3: 85.566ms
 ```
 
+```log
+[
+  {
+    'QUERY PLAN': 'Index Scan using transactions_pkey on transactions  (cost=0.42..8.44 rows=1 width=31) (actual time=0.031..0.032 rows=1 loops=1)'
+  },
+  { 'QUERY PLAN': '  Index Cond: (id = 10)' },
+  { 'QUERY PLAN': 'Planning Time: 0.061 ms' },
+  { 'QUERY PLAN': 'Execution Time: 0.056 ms' }
+]
+queryBeforeIndex1: 87.359ms
+[
+  {
+    'QUERY PLAN': 'Seq Scan on transactions  (cost=0.00..11432.00 rows=68997 width=31) (actual time=0.081..38.171 rows=68932 loops=1)'
+  },
+  {
+    'QUERY PLAN': "  Filter: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone))"
+  },
+  { 'QUERY PLAN': '  Rows Removed by Filter: 431068' },
+  { 'QUERY PLAN': 'Planning Time: 0.057 ms' },
+  { 'QUERY PLAN': 'Execution Time: 40.844 ms' }
+]
+queryBeforeIndex2: 128.318ms
+[
+  {
+    'QUERY PLAN': 'Seq Scan on transactions  (cost=0.00..12682.00 rows=55395 width=31) (actual time=0.013..39.436 rows=55095 loops=1)'
+  },
+  {
+    'QUERY PLAN': "  Filter: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone) AND (user_id> 2000))"
+  },
+  { 'QUERY PLAN': '  Rows Removed by Filter: 444905' },
+  { 'QUERY PLAN': 'Planning Time: 0.065 ms' },
+  { 'QUERY PLAN': 'Execution Time: 41.543 ms' }
+]
+queryBeforeIndex3: 128.081ms
+```
 
+Ahora despues de los indices 
