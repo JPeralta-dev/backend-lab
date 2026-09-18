@@ -50,3 +50,45 @@ Tener índices acelera las lecturas (`SELECT`), pero ¿qué impacto negativo tie
 * ¿Qué métricas clave debes observar en el resultado de `EXPLAIN ANALYZE` para saber si tu consulta mejoró realmente?
 
 *Tu respuesta:*
+
+
+## 5. Demostracion de diferencias 
+
+```log
+1
+queryBeforeIndex1: 96.149ms
+68932
+queryBeforeIndex2: 867.359ms
+55095
+queryBeforeIndex3: 222.245ms
+```
+
+```Log
+[
+  {
+    'QUERY PLAN': 'Index Scan using transactions_pkey on transactions  (cost=0.42..8.44 rows=1 width=31)'
+  },
+  { 'QUERY PLAN': '  Index Cond: (id = 10)' }
+]
+queryBeforeIndex1: 88.909ms
+[
+  {
+    'QUERY PLAN': 'Seq Scan on transactions  (cost=0.00..11432.00 rows=68997 width=31)'
+  },
+  {
+    'QUERY PLAN': "  Filter: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone))"
+  }
+]
+queryBeforeIndex2: 92.102ms
+[
+  {
+    'QUERY PLAN': 'Seq Scan on transactions  (cost=0.00..12682.00 rows=55395 width=31)'
+  },
+  {
+    'QUERY PLAN': "  Filter: ((created_at >= '2025-01-14 00:00:00'::timestamp without time zone) AND (created_at <= '2025-06-14 00:00:00'::timestamp without time zone) AND (user_id> 2000))"
+  }
+]
+queryBeforeIndex3: 85.566ms
+```
+
+

@@ -1,5 +1,8 @@
 import { Client } from "pg";
 import { faker } from "@faker-js/faker";
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const config = {
     connectionString: process.env.DATABASE_URL || "postgres://lab:lab@localhost:5432/backend_lab"
