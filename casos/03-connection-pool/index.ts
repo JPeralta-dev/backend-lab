@@ -24,9 +24,9 @@ async function main() {
   // 5. Imprime un resumen de métricas (éxitos, fallos, códigos de error).
 
   const TOTAL_REQUESTS = 150;
-  const REQUEST = `SELECT pg_sleep(0.1) * FROM transactions WHERE created_at BETWEEN '2025-01-14' AND '2025-06-14'`
+  const REQUEST = `SELECT pg_sleep(0.1)`
 
-  const executeMetrics = async (id:number) => {
+  const executeMetrics = async (id: number) => {
     const start = performance.now()
     try {
       const result = await pool.query(REQUEST)
@@ -42,24 +42,37 @@ async function main() {
       return {
         id,
         error,
-        success: true,
+        success: false,
         time: end - start
       }
     }
   }
   const taks = []
   // TODO: Escribe aquí la simulación de 150 peticiones simultáneas:
-  
+
   for (let index = 0; index < TOTAL_REQUESTS; index++) {
     taks.push(executeMetrics(index))
   }
 
-  const resultado = await Promise.allSettled(taks) 
+  const resultado = await Promise.allSettled(taks)
 
-  console.log(`Las request que fueron ejecutadas correctamente fueron: ${resultado.filter((i) => { i.status == "fulfilled" }).length}`);
-  console.log(`Las request que fueron ejecutadas con error fueron: ${resultado.filter((i)=>{ i.status == "rejected"}).length}`);
-  console.log(`Estos fueron las request que lograron ejectuarse: ${resultado.filter((i)=>{ i.status == "fulfilled" ? i.value.id : null})}`)
-  
+  const failed = resultado.filter(
+    (item) => item.status === "fulfilled" && !item.value.success
+  );
+
+  const successful = resultado.filter(
+  (item) => item.status === "fulfilled" && item.value.success
+);
+
+  const TotalTtime = resultado.map((item) => { if (item.status === "fulfilled") { return item.value.time } return 0 })
+
+  const avrg = TotalTtime.length > 0 ? TotalTtime.filter((i) => i != 0).reduce((sum, time) => sum + time, 0) / TotalTtime.length : 0
+
+  console.log(`Las request que fueron ejecutadas correctamente fueron: ${successful.length}`);
+  console.log(`Las request que fueron ejecutadas con error fueron: ${failed}`);
+  console.log(`Estos fueron las request que lograron ejectuarse: ${resultado.filter((i) => { i.status == "fulfilled" ? i.value.id : null })}`)
+  console.log(avrg);
+
   await pool.end();
 }
 

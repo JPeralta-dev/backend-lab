@@ -8,7 +8,8 @@
     "case:01": "tsx casos/01-transferencia-concurrente/index.ts",
     "case:01:test": "tsx casos/01-transferencia-concurrente/test-concurrencia.ts",
     "seed:02": "tsx casos/02-indices-explain/seed.ts",
-    "case:02": "tsx casos/02-indices-explain/index.ts"
+    "case:02": "tsx casos/02-indices-explain/index.ts",
+    "case:03": "tsx casos/03-connection-pool/index.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
