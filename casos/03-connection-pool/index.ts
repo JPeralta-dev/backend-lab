@@ -18,9 +18,9 @@ async function main() {
   console.log(`⚙️ Configuración del pool: max = ${poolConfig.max}, timeout = ${poolConfig.connectionTimeoutMillis}ms`);
 
   // 1. Lanza 150 tareas concurrentes (puedes usar Promise.allSettled). ✅
-  // 2. Cada tarea debe pedir una conexión al pool (o hacer un query simulando latencia, ej. "SELECT pg_sleep(0.1)").
-  // 3. Mide cuántas peticiones terminan con éxito y cuántas fallan por timeout.
-  // 4. Mide los tiempos de espera y latencia.
+  // 2. Cada tarea debe pedir una conexión al pool (o hacer un query simulando latencia, ej. "SELECT pg_sleep(0.1)").✅
+  // 3. Mide cuántas peticiones terminan con éxito y cuántas fallan por timeout.✅
+  // 4. Mide los tiempos de espera y latencia.✅
   // 5. Imprime un resumen de métricas (éxitos, fallos, códigos de error).
 
   const TOTAL_REQUESTS = 150;
@@ -54,13 +54,11 @@ async function main() {
     taks.push(executeMetrics(index))
   }
 
-  const resultado = await Promise.allSettled(taks)
-
-
+  const resultado = await Promise.allSettled(taks) 
 
   console.log(`Las request que fueron ejecutadas correctamente fueron: ${resultado.filter((i) => { i.status == "fulfilled" }).length}`);
   console.log(`Las request que fueron ejecutadas con error fueron: ${resultado.filter((i)=>{ i.status == "rejected"}).length}`);
-  
+  console.log(`Estos fueron las request que lograron ejectuarse: ${resultado.filter((i)=>{ i.status == "fulfilled" ? i.value.id : null})}`)
   
   await pool.end();
 }
