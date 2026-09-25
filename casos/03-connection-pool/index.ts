@@ -24,12 +24,13 @@ async function main() {
   // 5. Imprime un resumen de métricas (éxitos, fallos, códigos de error).
 
   const TOTAL_REQUESTS = 150;
-  const REQUEST = `SELECT pg_sleep(0.1)`
+  const REQUEST = `SELECT * FROM transactions WHERE created_at BETWEEN '2025-01-14' AND '2025-06-14'`
 
   const executeMetrics = async (id: number) => {
     const start = performance.now()
     try {
       const result = await pool.query(REQUEST)
+
       const end = performance.now()
       return {
         id,
@@ -61,18 +62,27 @@ async function main() {
   );
 
   const successful = resultado.filter(
-  (item) => item.status === "fulfilled" && item.value.success
-);
+    (item) => item.status === "fulfilled" && item.value.success
+  );
 
   const TotalTtime = resultado.map((item) => { if (item.status === "fulfilled") { return item.value.time } return 0 })
 
   const avrg = TotalTtime.length > 0 ? TotalTtime.filter((i) => i != 0).reduce((sum, time) => sum + time, 0) / TotalTtime.length : 0
 
   console.log(`Las request que fueron ejecutadas correctamente fueron: ${successful.length}`);
-  console.log(`Las request que fueron ejecutadas con error fueron: ${failed}`);
-  console.log(`Estos fueron las request que lograron ejectuarse: ${resultado.filter((i) => { i.status == "fulfilled" ? i.value.id : null })}`)
-  console.log(avrg);
+  console.log(`Las request que fueron ejecutadas con error fueron: ${failed.length}`);
+  console.log(`Estos fueron las request que lograron ejectuarse: ${resultado.map((i) => i.status === "fulfilled").length}`)
+  console.log(`Tiempo promedio en el cual se ejecuto cada query: ${avrg.toFixed(2)}`);
 
+
+  const errorSummary: Record<string, number> = {};
+  for (const item of failed) {
+    if (item.status === "fulfilled") {
+      const errMsg = (item.value.error as any)?.message || "Unknown error";
+      errorSummary[errMsg] = (errorSummary[errMsg] || 0) + 1;
+    }
+  }
+  console.log("Desglose de errores:", errorSummary);
   await pool.end();
 }
 
