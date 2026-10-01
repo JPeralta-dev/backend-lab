@@ -33,7 +33,11 @@ Estos pasos gastan demasiado muchimos. Investigando descubri que postgres utiliz
 
 *Tu respuesta:*
 
+* `max` (tamaño máximo del pool), es decir cuantas conexiones reutilizables vamos a tener abiertas, esto interactua con lo demas diciendo cuantsd conexioned tendremos para uitilizar de manerar concurrente.
+* `connectionTimeoutMillis` (tiempo límite esperando un cliente libre del pool) Cuantos milisegundos van a esperar las peticiones nuevas un cliente dentro del pool antes de mandar timeout.
+* `idleTimeoutMillis` (tiempo antes de cerrar una conexión inactiva) Cuanto tiempo esperara a que una conexion este inactiva antes de cerrar.
 
+las 130 peticiones que entran luego tienen que esperar a que terminen de realizarse las 20, empiezan a fallar cuando se cumplen los segundos impuestos en connectionTimeOutMilis. 
 
 ---
 
