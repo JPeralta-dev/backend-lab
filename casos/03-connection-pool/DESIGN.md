@@ -9,9 +9,17 @@
 * ¿Por qué es costoso abrir y cerrar una conexión TCP nueva directamente contra PostgreSQL en cada request HTTP?
 * ¿Qué crea PostgreSQL a nivel de sistema operativo por cada cliente conectado (hilo vs proceso, memoria dedicada como `work_mem`)?
 
-*Tu respuesta:*
+*Tu respuesta:* Es costoso porque todo el proceso de abrir una conexion de por si tiene algunos pasos antes de que se cree la conexion ahora imaginemos estar creando unua conexion por cada request y sea 1000/s eso seria garrafal, el pool reutiliza conexiones ya abiertas, dentro de crear una nueva conexion encontramos varias cosas.
 
+1. Apreton de manos entre el servidor y la base de datos antes de crear la conexion, es recursos consumidos y tiempo de latencia.
 
+2. cifrado de datos (TLS/SSL) Si la conexion es segura se deben intercambiar las llaves y los certificados para cifrar el canal, eso toma tiempo y CPU
+
+3. autenticacions y autorizacion del cliente que esta entrando 
+
+4. El servidor de base de datos debe reservar memoria y levantar un hilo para las peticiones entrante de ese nuevo cliente.
+
+Estos pasos gastan demasiado muchimos. Investigando descubri que postgres utiliza algo llamado, modelo basado en procesos independientes, en lugar de hilos. Cuando el cliente se conecta a Postgres, hay algo llamado proceso principal o postmaster, a nivel de sisteam operativo realiza una bifurcacion para crear un nuevo proceso backend dedicado.
 
 ---
 

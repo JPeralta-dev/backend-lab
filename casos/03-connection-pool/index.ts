@@ -90,3 +90,4 @@ main().catch((err) => {
   console.error("Error fatal en la ejecución:", err);
   process.exit(1);
 });
+
