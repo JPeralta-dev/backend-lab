@@ -1,7 +1,8 @@
 
 import Express, { Response, Request } from "express"
 import crypto from "bcryptjs"
-
+import worker_threads from 'node:worker_threads';
+import { threadSecundary } from "./service.hash.js";
 
 const app = Express()
 
@@ -11,15 +12,10 @@ app.get("/heath", (req:Request,res:Response) => {
     res.status(200).json({ "message": "Ok" })
 })
 
-app.get("/hash", (req: Request, res: Response) => {
-    const iteration = 5_000_000
-    const salt = 12
+app.get("/hash", async (req: Request, res: Response) => {
+    const salt = 16
     const password = "dkEGh1xiBF7P"
-    // for (let index = 0; index < iteration; index++) {
-    //     crypto.hashSync(password,salt)
-    // }
-
-    const hash = crypto.hashSync(password,salt)
+    const hash = await threadSecundary(password,salt)
     res.status(200).json({ "message": hash})
 })
 
