@@ -46,8 +46,7 @@ las 130 peticiones que entran luego tienen que esperar a que terminen de realiza
 * Si tu servidor de base de datos tiene 4 CPUs, ¿por qué configurar un pool de 200 conexiones puede ser **más lento** que un pool de 20 conexiones? (Pistas: *context switching*, saturación de disco y contención de cerrojos/locks).
 
 *Tu respuesta:*
-
-
+¿Más conexiones significan mayor rendimiento? No, 
 
 ---
 
