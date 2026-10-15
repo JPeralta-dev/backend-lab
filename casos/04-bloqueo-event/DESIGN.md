@@ -93,3 +93,50 @@ Req/Bytes counts sampled once per second.
 
 podemos llegar a observar como aumento la cantidad de tiempo y el max con respecto al primero test, sabesmos que pasa de un 11ms a un 679ms una cantidad absurda de tiempo aunque sea rapido en muchas pediciones eso empiezan hacer segundos.
 
+## Después de implementar Worker Threads
+
+Después de observar el problema que genera una tarea CPU-bound ejecutada de forma síncrona, el siguiente paso fue mover el cálculo de bcrypt a un `Worker Thread`.
+
+La idea no es hacer que el cálculo sea más rápido, sino evitar que ese trabajo bloquee el hilo principal de Node.js. De esta manera, mientras el worker realiza el cálculo del hash, el servidor puede continuar atendiendo otras peticiones, como las solicitudes al endpoint `/heath`.
+
+Para comprobarlo, mantuvimos el mismo escenario de pruebas con `autocannon`: dos conexiones concurrentes contra `/hash` y diez conexiones contra `/heath`.
+
+Los resultados obtenidos fueron los siguientes:
+
+```terminal
+# Endpoint /hash con Worker Thread
+
+Latency:
+  Avg: 4025.23 ms
+  97.5%: 4429 ms
+  99%: 4429 ms
+  Max: 4429 ms
+```
+
+El cálculo del hash ahora tarda aproximadamente cuatro segundos por petición. Esto demuestra que utilizar un worker no elimina el coste computacional de bcrypt. De hecho, existe un coste adicional relacionado con la creación del hilo y la comunicación entre el worker y el hilo principal.
+
+Sin embargo, el resultado más importante lo encontramos al observar el endpoint `/heath` mientras se ejecutaban las tareas pesadas:
+
+```terminal
+# Endpoint /heath durante la carga de /hash
+
+Latency:
+  Avg: 0.05 ms
+  97.5%: 1 ms
+  99%: 1 ms
+  Max: 10 ms
+```
+
+Si comparamos estos resultados con la ejecución anterior, donde el cálculo de bcrypt se ejecutaba de forma síncrona, observamos una diferencia significativa. En aquella prueba, la latencia máxima de `/heath` alcanzó los 674 ms y el p99 llegó a 448 ms. Con el worker, la latencia máxima registrada fue de 10 ms y el p99 de 1 ms.
+
+Esta diferencia permite observar cómo aislar una tarea CPU-bound del hilo principal mejora la capacidad de respuesta del servidor ante otras solicitudes concurrentes.
+
+### Conclusión
+
+La principal lección de este laboratorio es que una tarea pesada no necesariamente debe ejecutarse en el hilo principal de Node.js. Cuando una operación consume mucho tiempo de CPU y bloquea el event loop, puede perjudicar a endpoints que, por sí mismos, son muy rápidos.
+
+Mediante `Worker Threads`, conseguimos ejecutar el cálculo de bcrypt en otro hilo y mantener una latencia baja en `/heath`, sin necesidad de modificar la lógica de ese endpoint.
+
+No obstante, los workers no hacen que la CPU tenga más capacidad de la que realmente posee. Si creamos demasiados hilos o saturamos los núcleos disponibles, el rendimiento puede degradarse. Por eso, en una aplicación de producción, sería conveniente evaluar el uso de un *worker pool* que limite la cantidad de trabajadores y gestione las tareas pendientes.
+
+Este experimento demuestra que las decisiones de arquitectura deben sustentarse en mediciones reales. En este caso, comparamos la latencia bajo carga antes y después de aislar el cálculo, obteniendo evidencia de la mejora en la capacidad de respuesta del servidor.
