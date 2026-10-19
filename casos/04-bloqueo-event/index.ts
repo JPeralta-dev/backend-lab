@@ -1,7 +1,5 @@
 
 import Express, { Response, Request } from "express"
-import crypto from "bcryptjs"
-import worker_threads from 'node:worker_threads';
 import { threadSecundary } from "./service.hash.js";
 
 const app = Express()
