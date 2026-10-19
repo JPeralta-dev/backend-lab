@@ -1,6 +1,6 @@
 
 import Express, { Response, Request } from "express"
-import { threadSecundary } from "./service.hash.js";
+import { threadSecundary } from "./example-1/service.hash.js";
 
 const app = Express()
 
