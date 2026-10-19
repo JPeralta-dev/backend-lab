@@ -6,23 +6,31 @@ const app = Express()
 
 const PORT = 3000
 
-app.get("/heath", (req:Request,res:Response) => {
+app.get("/heath", (req: Request, res: Response) => {
     res.status(200).json({ "message": "Ok" })
 })
 
 app.get("/hash", async (req: Request, res: Response) => {
     try {
         const salt = 16
-    const password = "dkEGh1xiBF7P"
-    const hash = await threadSecundary(password,salt)
-    res.status(200).json({ "message": hash})
+        const password = "dkEGh1xiBF7P"
+        const hash = await threadSecundary(password, salt)
+        res.status(200).json({ "message": hash })
     } catch (error) {
         console.log(error);
-        res.json({error}).status(500)
+        res.json({ error }).status(500)
     }
 })
 
+app.post("/reports", () => {
+    // responder con el id del job 
+})
 
-app.listen(PORT,() => {
+app.get("/reports/:id", () => {
+    // esto devuelve { status, result? }  (pending | running | done | failed), el estado o el resultado 
+})
+
+
+app.listen(PORT, () => {
     console.log(`http://localhost:${PORT}/`);
 })
