@@ -1,7 +1,7 @@
 import { Worker } from "node:worker_threads"
 import { JobStatus, Stats, WorkerResponse } from "../types/jobs.type.js";
 import { uuidv7 } from "uuidv7"
-import { resolve } from "node:path";
+
 
 
 type PoolWorker = {
@@ -80,10 +80,34 @@ export class WokerPool {
     private createWorker(index: number) {
 
         const worker = new Worker(new URL("../service/worker.stats.ts", import.meta.url))
-            
+
         const poolWooker = { id: index, worker, busy: false }
 
-        worker.on("message",() =>{})
+        worker.on("message", (response: WorkerResponse) => {
+            const { jobId } = response
+
+            const pending = this.jobs.get(jobId)
+
+            if (pending) {
+                if (response.ok) {
+                    pending.resolve(response.result)
+                }
+
+                pending.reject(new Error("No se pudo procesar"))
+            }
+
+            poolWooker.busy = false
+
+            this.jobs.delete(jobId)
+            
+            this.processQueue()
+        })
+
+        worker.on("error", () => { })
+
+        worker.on("exit", () => {
+
+        })
 
         this.workers.push(poolWooker)
     }
