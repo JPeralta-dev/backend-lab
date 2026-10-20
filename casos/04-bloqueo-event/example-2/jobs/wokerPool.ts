@@ -37,16 +37,16 @@ export class WokerPool {
     run(payload: number[]) {
         const jobId = uuidv7()
         const jobPromise = new Promise<Stats>((resolve, reject) => {
-            this.jobs.set(jobId, { resolve, reject, timer: setTimeout(()=>{},200000) })
+            this.jobs.set(jobId, { resolve, reject, timer: setTimeout(() => { }, 200000) })
         })
 
         const freeWorker = this.workers.find((w) => !w.busy)
 
         if (freeWorker) {
             freeWorker.busy = true
-            freeWorker.worker.postMessage({jobId,payload})
+            freeWorker.worker.postMessage({ jobId, payload })
         } else {
-            this.queue.push({ jobId , job:payload})
+            this.queue.push({ jobId, job: payload })
         }
 
         return jobPromise
@@ -60,6 +60,10 @@ export class WokerPool {
 
     getStatusJob(JobId: string) {
         return this.jobs.get(JobId)
+    }
+
+    getSize() {
+        return this.size
     }
 
     private createWorker(index: number) {
