@@ -1,8 +1,12 @@
 
 import Express, { Response, Request } from "express"
 import { threadSecundary } from "./example-1/service.hash.js";
+import { WokerPool } from "./example-2/jobs/wokerPool.js";
+import { generateBigNumbers } from "./example-2/service/generateNumbers.js";
 
 const app = Express()
+
+const pool = new WokerPool(2)
 
 const PORT = 3000
 
@@ -22,12 +26,21 @@ app.get("/hash", async (req: Request, res: Response) => {
     }
 })
 
-app.post("/reports", () => {
-    // responder con el id del job 
+app.post("/reports", (req: Request, res: Response) => {
+    const numbers = generateBigNumbers(); // o los que vengan en req.body
+  
+  const jobId = pool.run(numbers);
+  return res.status(202).json({ jobId });
+    
 })
 
-app.get("/reports/:id", () => {
-    // esto devuelve { status, result? }  (pending | running | done | failed), el estado o el resultado 
+app.get("/reports/:id", (req: Request, res: Response) => {
+    const id = req.params.id
+    const job = pool.getStatusJob(id as string)
+
+    if (!job) return res.status(404).json({ "error": "job not found" })
+    
+    res.status(200).json({"message": job})
 })
 
 

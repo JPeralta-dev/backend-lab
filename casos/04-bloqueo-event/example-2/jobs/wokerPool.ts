@@ -2,7 +2,13 @@ import { Worker } from "node:worker_threads"
 import { JobStatus, Stats, WorkerResponse } from "../types/jobs.type.js";
 import { uuidv7 } from "uuidv7"
 
-
+type JobRecord = {
+  id: string;
+  status: "pending" | "running" | "done" | "failed";
+  result?: Stats;
+  error?: string;
+  createdAt: number;
+};
 
 type PoolWorker = {
     id: number,
@@ -25,6 +31,7 @@ export class WokerPool {
     private workers: PoolWorker[] = [];
     private jobs: Map<string, PendingJob>
     private queue: queueJob[]
+    private jobRecord: Map<string,JobRecord>
 
     constructor(private size: number) {
         for (let i = 0; i < size; i++) {
@@ -32,6 +39,7 @@ export class WokerPool {
         }
         this.jobs = new Map<string, PendingJob>();
         this.queue = []
+        this.jobRecord = new Map<string,JobRecord>()
     }
 
     run(payload: number[]) {
@@ -40,11 +48,17 @@ export class WokerPool {
             this.jobs.set(jobId, { resolve, reject, timer: setTimeout(() => { }, 200000) })
         })
 
+        this.jobRecord.set(jobId, {
+            id: jobId,
+            status: "pending",
+            createdAt: Date.now()
+        })
+
         this.queue.push({ jobId, job: payload })
 
         this.processQueue()
 
-        return jobPromise
+        return jobId
     }
 
     getStatusWorker(id: number) {
@@ -53,8 +67,9 @@ export class WokerPool {
         })
     }
 
-    getStatusJob(JobId: string) {
-        return this.jobs.get(JobId)
+    getStatusJob(JobId: string | undefined) {
+        if(!JobId) return
+        return this.jobRecord.get(JobId)
     }
 
     getSize() {
@@ -65,6 +80,9 @@ export class WokerPool {
         const freeWorker = this.workers.find((w) => !w.busy)
         if (!freeWorker) return
 
+        const job = this.jobRecord.get(queueJob.jobId)
+        if (job) job.status = "running"
+        
         freeWorker.busy = true
         freeWorker.worker.postMessage(queueJob)
 
@@ -88,18 +106,23 @@ export class WokerPool {
             const { jobId } = response
 
             const pending = this.jobs.get(jobId)
+            const job = this.jobRecord.get(jobId)
 
-            if (pending) {
+            if (job) {
                 if (response.ok) {
-                    pending.resolve(response.result)
+                    job.status = "done"
+                    job.result = response.result
+                } else {
+                    job.status = "failed"
+                    job.error = response.error
                 }
-
-                if (!response.ok) pending.reject(new Error("No se pudo procesar"))
             }
 
             poolWooker.busy = false
 
             this.jobs.delete(jobId)
+
+            this.jobRecord.delete(jobId)
 
             this.processQueue()
         })
