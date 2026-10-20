@@ -3,11 +3,11 @@ import { JobStatus, Stats, WorkerResponse } from "../types/jobs.type.js";
 import { uuidv7 } from "uuidv7"
 
 type JobRecord = {
-  id: string;
-  status: "pending" | "running" | "done" | "failed";
-  result?: Stats;
-  error?: string;
-  createdAt: number;
+    id: string;
+    status: "pending" | "running" | "done" | "failed";
+    result?: Stats;
+    error?: string;
+    createdAt: number;
 };
 
 type PoolWorker = {
@@ -31,7 +31,7 @@ export class WokerPool {
     private workers: PoolWorker[] = [];
     private jobs: Map<string, PendingJob>
     private queue: queueJob[]
-    private jobRecord: Map<string,JobRecord>
+    private jobRecord: Map<string, JobRecord>
 
     constructor(private size: number) {
         for (let i = 0; i < size; i++) {
@@ -39,23 +39,25 @@ export class WokerPool {
         }
         this.jobs = new Map<string, PendingJob>();
         this.queue = []
-        this.jobRecord = new Map<string,JobRecord>()
+        this.jobRecord = new Map<string, JobRecord>()
     }
 
     run(payload: number[]) {
         const jobId = uuidv7()
-        const jobPromise = new Promise<Stats>((resolve, reject) => {
+        new Promise<Stats>((resolve, reject) => {
             this.jobs.set(jobId, { resolve, reject, timer: setTimeout(() => { }, 200000) })
         })
+
 
         this.jobRecord.set(jobId, {
             id: jobId,
             status: "pending",
             createdAt: Date.now()
         })
-
-        this.queue.push({ jobId, job: payload })
-
+        console.log(this.jobRecord.get(jobId));
+        this.queue.push({ jobId, job: payload }) 
+        console.log(this.queue, "aqui esta dentro");
+        
         this.processQueue()
 
         return jobId
@@ -68,7 +70,9 @@ export class WokerPool {
     }
 
     getStatusJob(JobId: string | undefined) {
-        if(!JobId) return
+        if (!JobId) return
+        console.log(this.jobRecord.get(JobId));
+        
         return this.jobRecord.get(JobId)
     }
 
@@ -80,19 +84,28 @@ export class WokerPool {
         const freeWorker = this.workers.find((w) => !w.busy)
         if (!freeWorker) return
 
+        console.log(queueJob,"aqui llego a resolverse");
+        
+
         const job = this.jobRecord.get(queueJob.jobId)
         if (job) job.status = "running"
-        
+
         freeWorker.busy = true
         freeWorker.worker.postMessage(queueJob)
+
+        console.log(this.jobRecord.get(queueJob.jobId));
 
     }
 
     processQueue() {
         if (this.queue.length === 0) return
         const freeWorker = this.workers.find((w) => !w.busy)
+        console.log(freeWorker);
+        
         if (!freeWorker) return
         const job = this.queue.shift()
+        console.log(job);
+        
         if (job) this.resolveJob(job)
     }
 
@@ -122,12 +135,14 @@ export class WokerPool {
 
             this.jobs.delete(jobId)
 
-            this.jobRecord.delete(jobId)
+            //this.jobRecord.delete(jobId)
 
             this.processQueue()
         })
 
-        worker.on("error", () => { })
+        worker.on("error", (error) => {
+            console.log(error);
+        })
 
         worker.on("exit", () => {
 

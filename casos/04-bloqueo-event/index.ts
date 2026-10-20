@@ -37,7 +37,8 @@ app.post("/reports", (req: Request, res: Response) => {
 app.get("/reports/:id", (req: Request, res: Response) => {
     const id = req.params.id
     const job = pool.getStatusJob(id as string)
-
+    console.log(job);
+    
     if (!job) return res.status(404).json({ "error": "job not found" })
     
     res.status(200).json({"message": job})
