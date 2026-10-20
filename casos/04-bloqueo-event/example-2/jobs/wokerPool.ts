@@ -1,6 +1,6 @@
 import { Worker } from "node:worker_threads"
 import { JobStatus, Stats, WorkerResponse } from "../types/jobs.type.js";
-import {uuidv7} from "uuidv7"
+import { uuidv7 } from "uuidv7"
 import { resolve } from "node:path";
 
 
@@ -8,6 +8,11 @@ type PoolWorker = {
     id: number,
     worker: Worker,
     busy: boolean
+}
+
+type queueJob = {
+    jobId: string,
+    job: number[]
 }
 
 type PendingJob = {
@@ -19,24 +24,31 @@ export class WokerPool {
 
     private workers: PoolWorker[] = [];
     private jobs: Map<string, PendingJob>
+    private queue: queueJob[]
 
     constructor(private size: number) {
         for (let i = 0; i < size; i++) {
             this.createWorker(i)
         }
-        this.jobs = new Map<string, PendingJob>( );
+        this.jobs = new Map<string, PendingJob>();
+        this.queue = []
     }
 
     run(payload: number[]) {
         const jobId = uuidv7()
-        const jobPromise = new Promise<PendingJob>((resolve, reject) => {
-            this.jobs.set(jobId,{resolve, reject,})
+        const jobPromise = new Promise<Stats>((resolve, reject) => {
+            this.jobs.set(jobId, { resolve, reject, timer: setTimeout(()=>{},200000) })
         })
 
-        const freeWorker = this.workers.find((value) => { value.busy === false })
-        
-        freeWorker?.worker.postMessage({ jobId, payload })
-        
+        const freeWorker = this.workers.find((w) => !w.busy)
+
+        if (freeWorker) {
+            freeWorker.busy = true
+            freeWorker.worker.postMessage({jobId,payload})
+        } else {
+            this.queue.push({ jobId , job:payload})
+        }
+
         return jobPromise
     }
 
