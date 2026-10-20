@@ -10,7 +10,7 @@ type PoolWorker = {
     busy: boolean
 }
 
-type queueJob = {
+export type queueJob = {
     jobId: string,
     job: number[]
 }
@@ -40,14 +40,9 @@ export class WokerPool {
             this.jobs.set(jobId, { resolve, reject, timer: setTimeout(() => { }, 200000) })
         })
 
-        const freeWorker = this.workers.find((w) => !w.busy)
+        this.queue.push({ jobId, job: payload })
 
-        if (freeWorker) {
-            freeWorker.busy = true
-            freeWorker.worker.postMessage({ jobId, payload })
-        } else {
-            this.queue.push({ jobId, job: payload })
-        }
+        this.processQueue()
 
         return jobPromise
     }
@@ -66,7 +61,30 @@ export class WokerPool {
         return this.size
     }
 
+    resolveJob(queueJob: queueJob) {
+        const freeWorker = this.workers.find((w) => !w.busy)
+        if (!freeWorker) return
+
+        freeWorker.busy = true
+        freeWorker.worker.postMessage(queueJob)
+
+    }
+
+    processQueue() {
+        if (this.queue.length === 0) return
+
+        const job = this.queue.shift()
+        if (job) this.resolveJob(job)
+    }
+
     private createWorker(index: number) {
-        this.workers.push({ id: index, worker: new Worker(new URL("../service/worker.stats.ts", import.meta.url)), busy: false })
+
+        const worker = new Worker(new URL("../service/worker.stats.ts", import.meta.url))
+            
+        const poolWooker = { id: index, worker, busy: false }
+
+        worker.on("message",() =>{})
+
+        this.workers.push(poolWooker)
     }
 }
