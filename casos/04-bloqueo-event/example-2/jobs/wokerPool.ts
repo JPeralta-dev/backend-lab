@@ -72,7 +72,8 @@ export class WokerPool {
 
     processQueue() {
         if (this.queue.length === 0) return
-
+        const freeWorker = this.workers.find((w) => !w.busy)
+        if (!freeWorker) return
         const job = this.queue.shift()
         if (job) this.resolveJob(job)
     }
@@ -93,13 +94,13 @@ export class WokerPool {
                     pending.resolve(response.result)
                 }
 
-                pending.reject(new Error("No se pudo procesar"))
+                if (!response.ok) pending.reject(new Error("No se pudo procesar"))
             }
 
             poolWooker.busy = false
 
             this.jobs.delete(jobId)
-            
+
             this.processQueue()
         })
 
