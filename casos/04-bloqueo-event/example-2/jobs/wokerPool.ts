@@ -28,35 +28,29 @@ type PendingJob = {
 }
 export class WokerPool {
 
-    private workers: PoolWorker[] = [];
-    private jobs: Map<string, PendingJob>
-    private queue: queueJob[]
+    public workers: PoolWorker[] = [];
+    
+    public queue: queueJob[]
     private jobRecord: Map<string, JobRecord>
 
     constructor(private size: number) {
         for (let i = 0; i < size; i++) {
             this.createWorker(i)
         }
-        this.jobs = new Map<string, PendingJob>();
         this.queue = []
         this.jobRecord = new Map<string, JobRecord>()
     }
 
     run(payload: number[]) {
         const jobId = uuidv7()
-        new Promise<Stats>((resolve, reject) => {
-            this.jobs.set(jobId, { resolve, reject, timer: setTimeout(() => { }, 200000) })
-        })
-
 
         this.jobRecord.set(jobId, {
             id: jobId,
             status: "pending",
             createdAt: Date.now()
         })
-        console.log(this.jobRecord.get(jobId));
+        
         this.queue.push({ jobId, job: payload }) 
-        console.log(this.queue, "aqui esta dentro");
         
         this.processQueue()
 
@@ -118,7 +112,6 @@ export class WokerPool {
         worker.on("message", (response: WorkerResponse) => {
             const { jobId } = response
 
-            const pending = this.jobs.get(jobId)
             const job = this.jobRecord.get(jobId)
 
             if (job) {
@@ -132,8 +125,6 @@ export class WokerPool {
             }
 
             poolWooker.busy = false
-
-            this.jobs.delete(jobId)
 
             //this.jobRecord.delete(jobId)
 
