@@ -14,6 +14,7 @@ type PoolWorker = {
     id: number,
     worker: Worker,
     busy: boolean
+    currentJob: string
 }
 
 export type queueJob = {
@@ -84,7 +85,9 @@ export class WokerPool {
         const job = this.jobRecord.get(queueJob.jobId)
         if (job) job.status = "running"
 
+
         freeWorker.busy = true
+        freeWorker.currentJob = queueJob.jobId
         freeWorker.worker.postMessage(queueJob)
 
         console.log(this.jobRecord.get(queueJob.jobId));
@@ -107,7 +110,7 @@ export class WokerPool {
 
         const worker = new Worker(new URL("../service/worker.stats.ts", import.meta.url))
 
-        const poolWooker = { id: index, worker, busy: false }
+        const poolWooker = { id: index, worker, busy: false, currentJob: "" }
 
         worker.on("message", (response: WorkerResponse) => {
             const { jobId } = response
@@ -125,7 +128,7 @@ export class WokerPool {
             }
 
             poolWooker.busy = false
-
+            
             //this.jobRecord.delete(jobId)
 
             this.processQueue()
@@ -135,8 +138,25 @@ export class WokerPool {
             console.log(error);
         })
 
-        worker.on("exit", () => {
+        worker.on("exit", (exitCode: number) => {
 
+            this.workers = this.workers.filter((w)=> w.worker !== worker)
+            if (exitCode !== 0) {
+                console.error(`Worker ${index} crasheó con código: ${exitCode}`)
+                
+                if (poolWooker.currentJob) {
+                    const job = this.jobRecord.get(poolWooker.currentJob)
+                    if (job) {
+                        job.status = 'failed'
+                        job.error = `Worker murió inesperadamente (exit code ${exitCode})`
+                    }
+
+                    this.createWorker(index)
+
+                    this.processQueue()
+                        
+                }
+            }
         })
 
         this.workers.push(poolWooker)

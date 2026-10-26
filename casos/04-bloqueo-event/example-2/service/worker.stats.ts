@@ -5,9 +5,13 @@ import { Stats } from "../types/jobs.type.js";
 
 parentPort?.on("message", (queueJob: queueJob) => {
 
-    const result = findStats(queueJob.job)
+    try {
+        const result = findStats(queueJob.job)
 
-    parentPort?.postMessage({ jobId: queueJob.jobId, ok: true, result })
+        parentPort?.postMessage({ jobId: queueJob.jobId, ok: true, result })
+    } catch (error) {
+        parentPort?.postMessage({ jobId: queueJob.jobId, ok: false, error: error })
+    }
 })
 
 
