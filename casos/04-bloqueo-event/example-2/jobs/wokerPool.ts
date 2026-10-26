@@ -30,7 +30,7 @@ type PendingJob = {
 export class WokerPool {
 
     public workers: PoolWorker[] = [];
-    
+
     public queue: queueJob[]
     private jobRecord: Map<string, JobRecord>
 
@@ -50,9 +50,9 @@ export class WokerPool {
             status: "pending",
             createdAt: Date.now()
         })
-        
-        this.queue.push({ jobId, job: payload }) 
-        
+
+        this.queue.push({ jobId, job: payload })
+
         this.processQueue()
 
         return jobId
@@ -67,7 +67,7 @@ export class WokerPool {
     getStatusJob(JobId: string | undefined) {
         if (!JobId) return
         console.log(this.jobRecord.get(JobId));
-        
+
         return this.jobRecord.get(JobId)
     }
 
@@ -79,30 +79,24 @@ export class WokerPool {
         const freeWorker = this.workers.find((w) => !w.busy)
         if (!freeWorker) return
 
-        console.log(queueJob,"aqui llego a resolverse");
-        
-
         const job = this.jobRecord.get(queueJob.jobId)
         if (job) job.status = "running"
-
 
         freeWorker.busy = true
         freeWorker.currentJob = queueJob.jobId
         freeWorker.worker.postMessage(queueJob)
-
-        console.log(this.jobRecord.get(queueJob.jobId));
 
     }
 
     processQueue() {
         if (this.queue.length === 0) return
         const freeWorker = this.workers.find((w) => !w.busy)
-        console.log(freeWorker);
         
+
         if (!freeWorker) return
         const job = this.queue.shift()
-        console.log(job);
-        
+      
+
         if (job) this.resolveJob(job)
     }
 
@@ -128,7 +122,8 @@ export class WokerPool {
             }
 
             poolWooker.busy = false
-            
+            poolWooker.currentJob = "" 
+
             //this.jobRecord.delete(jobId)
 
             this.processQueue()
@@ -140,22 +135,21 @@ export class WokerPool {
 
         worker.on("exit", (exitCode: number) => {
 
-            this.workers = this.workers.filter((w)=> w.worker !== worker)
+            this.workers = this.workers.filter((w) => w.worker !== worker)
             if (exitCode !== 0) {
                 console.error(`Worker ${index} crasheó con código: ${exitCode}`)
-                
+
                 if (poolWooker.currentJob) {
                     const job = this.jobRecord.get(poolWooker.currentJob)
                     if (job) {
                         job.status = 'failed'
                         job.error = `Worker murió inesperadamente (exit code ${exitCode})`
                     }
-
-                    this.createWorker(index)
-
-                    this.processQueue()
-                        
                 }
+
+                this.createWorker(index)
+
+                this.processQueue()
             }
         })
 

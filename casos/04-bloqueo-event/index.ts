@@ -10,7 +10,7 @@ const pool = new WokerPool(2)
 
 const PORT = 3000
 
-app.get("/heath", (req: Request, res: Response) => {
+app.get("/health", (req: Request, res: Response) => {
     const response = {
         workers: pool.getSize(),
         busy: pool.workers.filter((w) => w.busy).length,
@@ -32,6 +32,9 @@ app.get("/hash", async (req: Request, res: Response) => {
 })
 
 app.post("/reports", (req: Request, res: Response) => {
+    if (pool.queue.length >= 20) {
+         return res.status(429).json({ error: "Server busy, queue is full. Try again later." });
+    }
     const numbers = generateBigNumbers(); // o los que vengan en req.body
 
     const jobId = pool.run(numbers);
