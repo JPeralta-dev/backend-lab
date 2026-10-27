@@ -33,7 +33,7 @@ app.get("/hash", async (req: Request, res: Response) => {
 
 app.post("/reports", (req: Request, res: Response) => {
     if (pool.queue.length >= 20) {
-         return res.status(429).json({ error: "Server busy, queue is full. Try again later." });
+        return res.status(429).json({ error: "Server busy, queue is full. Try again later." });
     }
     const numbers = generateBigNumbers(); // o los que vengan en req.body
 
